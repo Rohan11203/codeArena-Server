@@ -10,6 +10,6 @@ routes.use("/user", userRouter);
 // Get ALl Problems
 routes.use("/problem" , getProblems);
 // Submit code for a problem
-routes.use("/submission", submitCode);
+routes.use("/submit", submitCode);
 // Leaderboard
 routes.use("/leaderboard", leaderboardRouter);
