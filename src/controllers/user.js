@@ -6,7 +6,6 @@ import { UserModel } from "../db/index.js";
 import { Userauth } from "../auth/auth.js";
 
 export const userRouter = Router();
-const JWT_USER_SECRET = "Rohan";
 
 userRouter.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
@@ -63,7 +62,7 @@ userRouter.post("/login", async (req, res) => {
         {
           userId: response._id,
         },
-        JWT_USER_SECRET,
+        process.env.JWT_USER_SECRET,
       );
       res.json({
         message: "signin successfull",

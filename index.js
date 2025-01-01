@@ -1,49 +1,34 @@
 import express from 'express';
-import { mongoose, version } from 'mongoose';
-import { routes } from './src/routes/index.js';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { WebSocketServer } from 'ws';
-import axios from 'axios';
 import { createServer } from 'http';
-import { Socket } from 'dgram';
-import { type } from 'os';
-
-const app = express();
-const server = createServer(app);
-const wss = new WebSocketServer({ server });
+import {routes} from './src/routes/index.js';
+import { handleConnection } from './src/webSocket/websocketHandlers.js';
 
 dotenv.config();
 
+const app = express();
 app.use(express.json());
-app.use("/api", routes);
+app.use('/api', routes);
 
-wss.on('connection', (socket) => {
-  console.log('new Client connected:');
+const server = createServer(app);
+const wss = new WebSocketServer({ server });
 
-  socket.on('message', (message) => {
-    const data = JSON.parse(message.toString());
-    if(data.type === 'join'){
-      handleJoin(ws,data);
-    }
-    else if(data.type === 'chat'){
-      handleChat(ws,data);
-    }
-    console.log('received message:', message);
-  })
-})
+wss.on('connection', handleConnection);
 
-function handleJoin(ws,data){}
-function handleChat(ws,data){}
 async function main() {
-  try {
-    await mongoose.connect('mongodb+srv://rohanshikhare410:AQ8ZPGXLfg0OPUtl@cluster0.nk6up.mongodb.net/CodeArena');
-    console.log('Connected to MongoDB');
-  } catch (error) {
-    console.error('Error connecting to MongoDB:', error);
-  }
-  server.listen(3000, () => {
-    console.log('Server is running on port 3000');
-  });
+    try {
+        await mongoose.connect(process.env.MONGO_URL);
+        console.log('Connected to MongoDB');
+
+        const PORT = process.env.PORT || 3000;
+        server.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Error connecting to MongoDB:', error);
+    }
 }
 
 main();
