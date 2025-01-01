@@ -56,7 +56,7 @@ userRouter.post("/login", async (req, res) => {
       res.status(403).json({
         message: "password does not match",
       });
-      return  // return to avoid unnecessary executions. 403 Forbidden means the request was valid but the server is refusing to fulfill it. In this case, the password is wrong.
+      return 
     }
       const token = jwt.sign(
         {

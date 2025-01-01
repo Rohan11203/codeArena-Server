@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 
 export function  Userauth(req,res,next) {
-  const token = req.headers.token;
-
+  const authHeader = req.headers.authorization;
+  // const token = authHeader.split(" ")[1];
   try{
-    const response = jwt.verify(token, process.env.JWT_USER_SECRET); // This returns the user email and ID 
+    const response = jwt.verify(authHeader, process.env.JWT_USER_SECRET); // This returns the user email and ID 
 
   if(response){
     req.userId = response.userId;
