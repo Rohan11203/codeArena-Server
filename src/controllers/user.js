@@ -7,15 +7,15 @@ import { Userauth } from "../auth/auth.js";
 
 export const userRouter = Router();
 
-userRouter.post("/signup", async (req, res) => {
+userRouter.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
   const parsedData = validateUserData.safeParse(req.body);
 
   if (!parsedData.success) {
     console.log(parsedData.error.errors.map(err => err.message)); // Prints the error message
-    res.status(400).json({ message: "Validation failed", errors: parsedData.error.errors });
+    return res.status(400).json({ message: "Validation failed", Error: parsedData.error.errors.map(err => err.message) });
     
-    return;
+    
   }
 
   try {
@@ -26,17 +26,21 @@ userRouter.post("/signup", async (req, res) => {
       password : hashedPassword,
     });
 
+    return res.status(201).json({
+      success : true,
+      message: "The Registration was successfull",
+    });
+
   } catch (e) {
-    console.log("error creating user ",e);
-    return res.status(500).json({ message: "Error creating user" });
+    console.log(e.message);
+    return res.status(500).json({ Error: e.message });
   }
-  res.json({
-    message: "signup successfull",
-  });
+ 
 });
 
 userRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
+
 
   try{
     const response = await UserModel.findOne({
@@ -44,19 +48,19 @@ userRouter.post("/login", async (req, res) => {
     });
 
     if(!response){
-       res.status(403).json({
+      return res.status(403).json({
         message: "email does not exists",
       });
-      return
+      
     }
 
     const passwordMatch =  await bcrypt.compare(password, response.password);
   
     if(!passwordMatch){
-      res.status(403).json({
+      return res.status(403).json({
         message: "password does not match",
       });
-      return 
+       
     }
       const token = jwt.sign(
         {
@@ -64,10 +68,11 @@ userRouter.post("/login", async (req, res) => {
         },
         process.env.JWT_USER_SECRET,
       );
-      res.json({
-        message: "signin successfull",
+      return res.status(200).cookie("token", token,{ httpOnly: true }).json({
+        success: true,
+        message: "Login successful",
         token: token,
-      });
+      })
   }
   catch (e) {
     console.log("error ", e);
@@ -89,3 +94,17 @@ userRouter.get("/profile", Userauth, async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 });
+
+userRouter.get("/logout", Userauth, async (req, res) => {
+  try{
+   return res.status(200).clearCookie('token',{ httpOnly:true }).json({
+    success: true,
+    message: "Logged out successfully",
+   })
+  }catch (error) {
+    console.log(error.message)
+    return res.status(500).json({ 
+      Error: error.message 
+    });
+  }
+})
