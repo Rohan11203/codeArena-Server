@@ -8,12 +8,10 @@ submitCode.post("/", async (req, res) => {
   try {
     const user = await UserModel.findById(req.userId);
     if (!user) {
-          return res.status(404).json({ message: "User not found" });
-        }
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    const { code, language, problemId } = req.body;
-
-    console.log("Received code submission:", req.body);
+    const { sourceCode, language, problemId } = req.body;
 
     const problem = await ProblemModel.findById(problemId);
     if (!problem) {
@@ -21,9 +19,13 @@ submitCode.post("/", async (req, res) => {
     }
 
     const pistonPayload = {
-      language : language || "python",
+      language: language,
       version: "*",
-      files: [{ name: "main", content: code }],
+      files: [
+        {
+          content: sourceCode,
+        },
+      ],
     };
 
     // Call the Piston API to execute the code
@@ -33,47 +35,29 @@ submitCode.post("/", async (req, res) => {
     );
 
     const finalOutput = response.data.run.output;
-    let passedTestCasesCount = 0;
-    const failedTestCases = [];
+    const errorOutput = response.data.run.stderr;
     console.log("Final output:", finalOutput);
 
-
-    problem.testCases.forEach((test) => {
-      if (test.output.trim() === finalOutput.trim()) {
-        console.log("Test case passed");
-        passedTestCasesCount++;
-      }else{
-        failedTestCases.push({
-          testCase: test,
-          reason: `Expected ${test.output.trim()}, Got: ${finalOutput.trim()}}`
-        });
-        console.log(`Test case failed: ${test}`);
-      }
-    });
-
-
-    if (passedTestCasesCount === problem.testCases.length) {
-      console.log("All test cases passed");
-    } else {
-      console.log(`${problem.testCases.length - passedTestCasesCount} test cases failed`);
-    }
-
-    
     res.json({
       message: "Code submitted",
       output: finalOutput || "No output available",
       problem,
-      failedTestCases,
+      errorOutput,
     });
-
   } catch (error) {
-    
     if (error.response) {
       console.error("Piston API Error:", error.response.data);
-      return res.status(500).json({ message: "Error with the Piston API", details: error.response.data });
+      return res
+        .status(500)
+        .json({
+          message: "Error with the Piston API",
+          details: error.response.data,
+        });
     } else {
       console.error("Error executing code:", error.message);
-      return res.status(500).json({ message: "Error executing code", details: error.message });
+      return res
+        .status(500)
+        .json({ message: "Error executing code", details: error.message });
     }
   }
 });

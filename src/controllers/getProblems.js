@@ -14,14 +14,15 @@ getProblems.get('/',async (req, res) => {
 });
 
 getProblems.post('/add', async (req,res) => {
-  const { title, description, sampleInput, sampleOutput, testCases  } = req.body;
+  const { title, description,difficulty, examples, constraints,testCases  } = req.body;
 
   try{
     await ProblemModel.create({
       title,
       description,
-      sampleInput,
-      sampleOutput,
+      difficulty,
+      examples,
+      constraints,
       testCases,
     })
   }

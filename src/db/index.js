@@ -4,20 +4,27 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true},
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true }, 
-  totalScore: { type: Number, default: 0 }, 
+  totalScore: { type: Number, default: 0 },
+  level: { type: Number, default: 1 },
+  achivements: { type: Number, default: 0 }, 
   joinedAt: { type: Date, default: Date.now }
 });
 
 const problemSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true }, // Problem statement
-  sampleInput: { type: String, required: true },
-  sampleOutput: { type: String, required: true },
   difficulty: { type: String, enum: ['Easy', 'Medium', 'Hard'], default: 'Easy' },
+  examples: [
+    {
+      input: mongoose.Schema.Types.Mixed,
+      output: mongoose.Schema.Types.Mixed
+    }
+  ],
+  constraints: [String],
   testCases: [
       {
-          input: { type: String, required: true },
-          output: { type: String, required: true }
+          input: mongoose.Schema.Types.Mixed,
+          expectedOutput: mongoose.Schema.Types.Mixed
       }
   ],
   createdAt: { type: Date, default: Date.now }
