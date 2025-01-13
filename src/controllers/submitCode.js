@@ -10,7 +10,6 @@ submitCode.post("/", async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
     const { sourceCode, language, problemId } = req.body;
 
     const problem = await ProblemModel.findById(problemId);

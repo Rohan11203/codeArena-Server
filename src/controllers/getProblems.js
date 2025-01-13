@@ -13,6 +13,21 @@ getProblems.get('/',async (req, res) => {
   });
 });
 
+getProblems.get("/random", async (req,res) => {
+  const problems = await ProblemModel.find();
+  if (!problems) {
+    return res.status(404).json({ message: "No problems found" });
+  }
+  const randomIndex = Math.floor(Math.random() * problems.length);
+  const randomProblem = problems[randomIndex]._id;
+  
+  
+  res.json({
+    message: "Random problem",
+    problemId: randomProblem,
+  })
+})
+
 getProblems.post('/add', async (req,res) => {
   const { title, description,difficulty, examples, constraints,testCases  } = req.body;
 
