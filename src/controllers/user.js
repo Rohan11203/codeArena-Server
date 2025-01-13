@@ -108,3 +108,20 @@ userRouter.get("/logout", Userauth, async (req, res) => {
     });
   }
 })
+
+userRouter.put("/update", Userauth, async (req, res) => {
+  try {
+    console.log("Request Body:", req.body);
+    const user = await UserModel.findByIdAndUpdate(
+      req.userId,
+      { $set: req.body },
+      { new: true }
+    );
+    
+    if (!user) return res.status(404).send('User not found');
+    res.status(200).json(user);
+  } catch (error) {
+    console.log("error ", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+});

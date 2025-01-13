@@ -32,7 +32,7 @@ export function handleConnection(ws) {
 
 function handleJoinRoom(ws, data) {
     const { username, roomId } = data;
-
+    console.log(`User ${username} joined room ${roomId}`);
     // Remove from previous room if already joined
     if (clients.has(ws)) {
         handleLeaveRoom(ws);
