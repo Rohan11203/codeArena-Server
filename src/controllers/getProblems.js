@@ -14,18 +14,7 @@ getProblems.get('/',async (req, res) => {
 });
 
 getProblems.get("/random", async (req,res) => {
-  const problems = await ProblemModel.find();
-  if (!problems) {
-    return res.status(404).json({ message: "No problems found" });
-  }
-  const randomIndex = Math.floor(Math.random() * problems.length);
-  const randomProblem = problems[randomIndex]._id;
   
-  
-  res.json({
-    message: "Random problem",
-    problemId: randomProblem,
-  })
 })
 
 getProblems.post('/add', async (req,res) => {
@@ -53,7 +42,14 @@ getProblems.post('/add', async (req,res) => {
   });
 })
 getProblems.get('/:id', async (req, res) => {
-  const problem = await ProblemModel.findById(req.params.id);
+  const problems = await ProblemModel.find();
+  if (!problems) {
+    return res.status(404).json({ message: "No problems found" });
+  }
+  const randomIndex = Math.floor(Math.random() * problems.length);
+  const randomProblem = problems[randomIndex]._id;
+  
+  const problem = await ProblemModel.findById(randomProblem);
   if (!problem) {
     return res.status(404).json({ message: "Problem not found" });
   }
@@ -61,6 +57,7 @@ getProblems.get('/:id', async (req, res) => {
   res.json({
     message: "Problem by ID",
     problem,
+    problemId: randomProblem,
     // Add your logic here to fetch the problem with the given ID from the database
   });
 });
