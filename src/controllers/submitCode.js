@@ -1,10 +1,10 @@
 import { Router } from "express";
 import axios from "axios";
-import { ProblemModel, UserModel } from "../db/index.js";
+import { ProblemModel, TestCasesModel, UserModel } from "../db/index.js";
 
 export const submitCode = Router();
 
-async function runCodeWithTests(code, testCases,language) {
+async function runCodeWithTests(code, testCases,language,testExpression) {
   const PISTON_API_URL = 'https://emkc.org/api/v2/piston/execute';
   const results = {
       passed: 0,
@@ -17,6 +17,7 @@ async function runCodeWithTests(code, testCases,language) {
       // Wrap the code with test case input
       const wrappedCode = `
           ${code}
+          ${testExpression.callExpression}
       `;
 
       try {
@@ -78,7 +79,9 @@ async function runCodeWithTests(code, testCases,language) {
 
 submitCode.post("/", async (req, res) => {
   try {
-    const { code, testCases,language } = req.body;
+    const { code, testCases,language,problemId } = req.body;
+
+    const testExpression = await TestCasesModel.findById(problemId);
 
     if (!code || !testCases || !Array.isArray(testCases)) {
         return res.status(400).json({
@@ -86,7 +89,8 @@ submitCode.post("/", async (req, res) => {
         });
     }
 
-    const results = await runCodeWithTests(code, testCases,language);
+    console.log(testExpression)
+    const results = await runCodeWithTests(code, testCases,language,testExpression);
     res.json(results);
 
 } catch (error) {
