@@ -17,7 +17,7 @@ async function runCodeWithTests(code, testCases,language,testExpression) {
       // Wrap the code with test case input
       const wrappedCode = `
           ${code}
-          ${testExpression.callExpression}
+        //   ${testExpression.callExpression}
       `;
 
       try {
