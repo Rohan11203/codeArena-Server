@@ -4,81 +4,157 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { UserModel } from "../db/index.js";
 import { Userauth } from "../auth/auth.js";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import dotenv from "dotenv";
+import passport from "passport";
+dotenv.config();
 
 export const userRouter = Router();
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:3000/api/user/auth/google/callback", // This is URL that is stored in Google COnsole
+      userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
+    },
+
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        let user = await UserModel.findOne({ email: profile.emails[0].value });
+
+        if (!user) {
+          user = await UserModel.create({
+            name: profile.displayName,
+            email: profile.emails[0].value,
+            password: "",
+          });
+        }
+
+        return done(null, user);
+      } catch (error) {
+        return done(error, null);
+      }
+    }
+  )
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user._id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await UserModel.findById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+});
+userRouter.get(
+  "/auth/google",
+  (req, res, next) => {
+    console.log("Starting Google auth flow");
+    next();
+  },
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    prompt: "select_account",
+  })
+);
+userRouter.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
+  (req, res) => {
+    const token = jwt.sign(
+      { userId: req.user._id },
+      process.env.JWT_USER_SECRET
+    );
+    res
+      .cookie("token", token, { httpOnly: true, sameSite: "lax" })
+      .redirect("http://localhost:5173/dashboard");
+  }
+);
+
 
 userRouter.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
   const parsedData = validateUserData.safeParse(req.body);
 
   if (!parsedData.success) {
-    console.log(parsedData.error.errors.map(err => err.message)); // Prints the error message
-    return res.status(400).json({ message: "Validation failed", Error: parsedData.error.errors.map(err => err.message) });
-    
-    
+    console.log(parsedData.error.errors.map((err) => err.message)); // Prints the error message
+    return res
+      .status(400)
+      .json({
+        message: parsedData.error.errors.map((err) => err.message),
+      });
   }
 
   try {
+    const response = await UserModel.findOne({
+      email: email,
+    });
+
+    if (response) {
+      return res.status(403).json({
+        message: "email Already Exists",
+      });
+    }
     const hashedPassword = await bcrypt.hash(password, 5);
     await UserModel.create({
-      name : name,
-      email : email,
-      password : hashedPassword,
+      name: name,
+      email: email,
+      password: hashedPassword,
     });
 
     return res.status(201).json({
-      success : true,
+      success: true,
       message: "The Registration was successfull",
     });
-
   } catch (e) {
     console.log(e.message);
     return res.status(500).json({ Error: e.message });
   }
- 
 });
 
 userRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-
-  try{
+  try {
     const response = await UserModel.findOne({
       email: email,
     });
 
-    if(!response){
+    if (!response) {
       return res.status(403).json({
         message: "email does not exists",
       });
-      
     }
 
-    const passwordMatch =  await bcrypt.compare(password, response.password);
-  
-    if(!passwordMatch){
+    const passwordMatch = await bcrypt.compare(password, response.password);
+
+    if (!passwordMatch) {
       return res.status(403).json({
         message: "password does not match",
       });
-       
     }
-      const token = jwt.sign(
-        {
-          userId: response._id,
-        },
-        process.env.JWT_USER_SECRET,
-      );
-      return res.status(200).cookie("token", token,{ httpOnly: true }).json({
-        success: true,
-        message: "Login successful",
-        token: token,
-      })
-  }
-  catch (e) {
+    const token = jwt.sign(
+      {
+        userId: response._id,
+      },
+      process.env.JWT_USER_SECRET
+    );
+    return res.status(200).cookie("token", token, { httpOnly: true }).json({
+      success: true,
+      message: "Login successful",
+      token: token,
+    });
+  } catch (e) {
     console.log("error ", e);
     return res.status(401).json({
       message: "Invalid email or password",
-    })
+    });
   }
 });
 
@@ -96,18 +172,18 @@ userRouter.get("/profile", Userauth, async (req, res) => {
 });
 
 userRouter.get("/logout", Userauth, async (req, res) => {
-  try{
-   return res.status(200).clearCookie('token',{ httpOnly:true }).json({
-    success: true,
-    message: "Logged out successfully",
-   })
-  }catch (error) {
-    console.log(error.message)
-    return res.status(500).json({ 
-      Error: error.message 
+  try {
+    return res.status(200).clearCookie("token", { httpOnly: true }).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({
+      Error: error.message,
     });
   }
-})
+});
 
 userRouter.put("/update", Userauth, async (req, res) => {
   try {
@@ -117,8 +193,8 @@ userRouter.put("/update", Userauth, async (req, res) => {
       { $set: req.body },
       { new: true }
     );
-    
-    if (!user) return res.status(404).send('User not found');
+
+    if (!user) return res.status(404).send("User not found");
     res.status(200).json(user);
   } catch (error) {
     console.log("error ", error);

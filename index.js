@@ -7,20 +7,42 @@ import { routes } from "./src/routes/index.js";
 import { handleConnection } from "./src/webSocket/websocketHandlers.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import passport from "passport";
+import session from "express-session";
+
 dotenv.config();
 
 const app = express();
+app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"], // Replace with your frontend URL
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175",
+    ], 
     credentials: true, // Allow credentials (cookies, etc.)
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
     allowedHeaders: ["Content-Type", "Authorization"], // Specify allowed headers
   })
 );
 
-app.use(express.json());
+app.use(
+  session({
+    secret: process.env.JWT_USER_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24,
+    },
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("/api", routes);
 
