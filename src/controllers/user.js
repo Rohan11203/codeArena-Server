@@ -16,7 +16,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/api/user/auth/google/callback", // This is URL that is stored in Google COnsole
+      callbackURL: "https://codearena-server.onrender.com/api/user/auth/google/callback", // This is URL that is stored in Google COnsole
       userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
     },
 
@@ -73,7 +73,7 @@ userRouter.get(
     );
     res
       .cookie("token", token, { httpOnly: true, sameSite: "lax" })
-      .redirect("http://localhost:5173/dashboard");
+      .redirect("https://codearena-frontend.onrender.com/dashboard");
   }
 );
 
