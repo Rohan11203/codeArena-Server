@@ -9,7 +9,6 @@ getProblems.get('/',async (req, res) => {
   res.json({
     message: "All problems",
     problems: problem,
-    // Add your logic here to fetch all problems from the database
   });
 });
 
@@ -35,7 +34,6 @@ getProblems.post('/add', async (req,res) => {
     res.status(500).json({ message: "Error while adding problem" });
     return;
   }
-  // Add a new problem to the database
   
   res.json({
     message: "New problem added",
@@ -58,7 +56,6 @@ getProblems.get('/:id', async (req, res) => {
     message: "Problem by ID",
     problem,
     problemId: randomProblem,
-    // Add your logic here to fetch the problem with the given ID from the database
   });
 });
 

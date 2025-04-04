@@ -92,6 +92,7 @@ userRouter.post("/register", async (req, res) => {
   }
 
   try {
+    const randomNumber = Math.floor(Math.random() * 100) + 1;
     const response = await UserModel.findOne({
       email: email,
     });
@@ -106,6 +107,7 @@ userRouter.post("/register", async (req, res) => {
       name: name,
       email: email,
       password: hashedPassword,
+      Avtar: `https://i.pravatar.cc/150?img=${randomNumber}`
     });
 
     return res.status(201).json({

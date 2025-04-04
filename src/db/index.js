@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { string } from "zod";
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -7,6 +8,7 @@ const userSchema = new mongoose.Schema({
   totalScore: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
   achivements: { type: Number, default: 0 },
+  Avtar: { type: String},
   joinedAt: { type: Date, default: Date.now },
 });
 

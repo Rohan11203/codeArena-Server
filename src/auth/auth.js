@@ -7,7 +7,7 @@ export function  Userauth(req,res,next) {
     return res.status(401).json({message : 'Unauthenticated: No token provided'});
   }
   try{
-    const response = jwt.verify(token, process.env.JWT_USER_SECRET); // This returns the user email and ID 
+    const response = jwt.verify(token, process.env.JWT_USER_SECRET); // This  ID based on that you can fetch user data 
 
   if(response){
     req.userId = response.userId;
