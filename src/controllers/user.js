@@ -72,7 +72,7 @@ userRouter.get(
       process.env.JWT_USER_SECRET
     );
     res
-      .cookie("token", token, { httpOnly: true, sameSite: "lax" })
+      .cookie("token", token, { httpOnly: true, sameSite: "None", secure: true })
       .redirect("https://codearena-frontend.onrender.com/dashboard");
   }
 );
