@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 export function  Userauth(req,res,next) {
   const token = req.cookies.token;
 
-  console.log("This is request object", req);
+  console.log("This cookies", req.cookies);
   // const token = authHeader.split(" ")[1];
   if(!token){
     console.log("There is no token")
