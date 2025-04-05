@@ -16,7 +16,8 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://codearena-server.onrender.com/api/user/auth/google/callback", // This is URL that is stored in Google COnsole
+      callbackURL:
+        "https://codearena-server.onrender.com/api/user/auth/google/callback", // This is URL that is stored in Google COnsole
       userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
     },
 
@@ -72,11 +73,14 @@ userRouter.get(
       process.env.JWT_USER_SECRET
     );
     res
-      .cookie("token", token, { httpOnly: true, sameSite: "None", secure: true })
+      .cookie("token", token, {
+        httpOnly: true,
+        sameSite: "None",
+        secure: true,
+      })
       .redirect("https://codearena-frontend.onrender.com/dashboard");
   }
 );
-
 
 userRouter.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
@@ -84,11 +88,9 @@ userRouter.post("/register", async (req, res) => {
 
   if (!parsedData.success) {
     console.log(parsedData.error.errors.map((err) => err.message)); // Prints the error message
-    return res
-      .status(400)
-      .json({
-        message: parsedData.error.errors.map((err) => err.message),
-      });
+    return res.status(400).json({
+      message: parsedData.error.errors.map((err) => err.message),
+    });
   }
 
   try {
@@ -107,7 +109,7 @@ userRouter.post("/register", async (req, res) => {
       name: name,
       email: email,
       password: hashedPassword,
-      Avtar: `https://i.pravatar.cc/150?img=${randomNumber}`
+      Avtar: `https://i.pravatar.cc/150?img=${randomNumber}`,
     });
 
     return res.status(201).json({
@@ -147,11 +149,19 @@ userRouter.post("/login", async (req, res) => {
       },
       process.env.JWT_USER_SECRET
     );
-    return res.status(200).cookie("token", token, { httpOnly: true }).json({
-      success: true,
-      message: "Login successful",
-      token: token,
-    });
+    return res
+      .status(200)
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: true, // Needed for HTTPS (Render uses HTTPS)
+        sameSite: "None", // Required for cross-origin cookies
+        maxAge: 24 * 60 * 60 * 1000, // Optional: 1 day
+      })
+      .json({
+        success: true,
+        message: "Login successful",
+        token,
+      });
   } catch (e) {
     console.log("error ", e);
     return res.status(401).json({
