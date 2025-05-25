@@ -33,11 +33,11 @@ app.use(
   session({
     secret: process.env.JWT_USER_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       secure: true,
       httpOnly: true,
-      sameSite: "None",
+      sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24,
     },
   })
