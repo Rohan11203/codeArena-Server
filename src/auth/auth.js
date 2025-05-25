@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-export function userAuth(req, res, next) {
+export function Userauth(req, res, next) {
   try {
     let token;
     if (req.cookies && req.cookies.token) {
