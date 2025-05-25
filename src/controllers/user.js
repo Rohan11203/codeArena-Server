@@ -22,23 +22,17 @@ passport.use(
     },
 
     async (accessToken, refreshToken, profile, done) => {
-      try {
-        let user = await UserModel.findOne({ googleId: profile.id });
+      let user = await UserModel.findOne({ googleId: profile.id });
 
-        if (!user) {
-          const newUser = await UserModel.create({
-            googleId: profile.id,
-            name: profile.displayName,
-            email: profile.emails[0].value,
-          });
-        }
-        if (newUser) {
+      if (!user) {
+        const newUser = await UserModel.create({
+          googleId: profile.id,
+          name: profile.displayName,
+          email: profile.emails[0].value,
+        });
           done(null, newUser);
-        } else {
-          done(null, user);
-        }
-      } catch (error) {
-        return done(error, null);
+      } else {
+        done(null, user);
       }
     }
   )
@@ -69,7 +63,7 @@ userRouter.get(
 );
 userRouter.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/", session: true }),
+  passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     res.redirect("https://codearena-frontend.onrender.com/dashboard");
   }
