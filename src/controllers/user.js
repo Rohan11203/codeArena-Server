@@ -24,6 +24,7 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       let user = await UserModel.findOne({ googleId: profile.id });
 
+      const randomNumber = Math.floor(Math.random() * 100) + 1;
       if (!user) {
         const newUser = await UserModel.create({
           googleId: profile.id,
