@@ -145,6 +145,7 @@ userRouter.post("/login", async (req, res) => {
         secure: true, // Needed for HTTPS (Render uses HTTPS)
         sameSite: "None", // Required for cross-origin cookies
         maxAge: 24 * 60 * 60 * 1000, // Optional: 1 day
+        domain: ".onrender.com"
       })
       .json({
         success: true,
